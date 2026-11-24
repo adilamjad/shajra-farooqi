@@ -4,12 +4,152 @@ const DB_NAME = 'shajra_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'app_state';
 const TREE_KEY = 'shajra_family_tree';
+export const AUTH_TOKEN_KEY = 'shajra_auth_token';
 
 export interface ServerTreeResponse {
   initialized: boolean;
   people: Person[] | null;
   pinnedPersonId: string | null;
   updatedAt?: string;
+}
+
+export interface AuthUserResponse {
+  username: string;
+  role: 'admin' | 'viewer';
+  isDefaultViewer?: boolean;
+  accountsInfo?: {
+    adminUsername: string;
+    viewerUsername: string;
+  };
+}
+
+export function getStoredAuthToken(): string | null {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAuthToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+/**
+ * Queries current user role from server (/api/auth/me).
+ * Defaults to viewer mode if unauthenticated or offline.
+ */
+export async function fetchCurrentUser(): Promise<AuthUserResponse> {
+  const token = getStoredAuthToken();
+  try {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await fetch('/api/auth/me', {
+      method: 'GET',
+      headers,
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      return (await res.json()) as AuthUserResponse;
+    }
+  } catch {
+    // Fallback for offline/local dev without backend
+  }
+  return { username: 'viewer', role: 'viewer', isDefaultViewer: true };
+}
+
+/**
+ * Logs in with username & password (/api/auth/login)
+ */
+export async function loginWithCredentials(
+  username: string,
+  password: string
+): Promise<{
+  ok: boolean;
+  username?: string;
+  role?: 'admin' | 'viewer';
+  token?: string;
+  error?: string;
+}> {
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { ok: false, error: data.error || 'Invalid username or password' };
+    }
+    if (data.token) {
+      setStoredAuthToken(data.token);
+    }
+    return {
+      ok: true,
+      username: data.username,
+      role: data.role,
+      token: data.token
+    };
+  } catch {
+    // Offline fallback if server is not running
+    if (username.trim().toLowerCase() === 'admin' && password === 'admin123') {
+      return { ok: true, username: 'admin', role: 'admin', token: 'local-admin' };
+    }
+    if (username.trim().toLowerCase() === 'viewer' && password === 'viewer123') {
+      return { ok: true, username: 'viewer', role: 'viewer', token: 'local-viewer' };
+    }
+    return { ok: false, error: 'Unable to reach authentication server' };
+  }
+}
+
+/**
+ * Updates Admin or Viewer credentials (/api/auth/update-credentials)
+ */
+export async function updateAccountCredentials(
+  targetRole: 'admin' | 'viewer',
+  newUsername: string,
+  newPassword: string
+): Promise<{
+  ok: boolean;
+  message?: string;
+  error?: string;
+  accountsInfo?: { adminUsername: string; viewerUsername: string };
+}> {
+  const token = getStoredAuthToken();
+  try {
+    const res = await fetch('/api/auth/update-credentials', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ targetRole, newUsername, newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { ok: false, error: data.error || 'Failed to update credentials' };
+    }
+    if (data.token) {
+      setStoredAuthToken(data.token);
+    }
+    return {
+      ok: true,
+      message: data.message,
+      accountsInfo: data.accountsInfo
+    };
+  } catch {
+    return { ok: false, error: 'Unable to reach server to update credentials' };
+  }
 }
 
 function openDB(): Promise<IDBDatabase> {
@@ -32,7 +172,6 @@ function openDB(): Promise<IDBDatabase> {
 
 /**
  * Fetches the shared family tree from the backend server (/api/tree).
- * Returns null if the server API is unreachable (e.g. offline static mode).
  */
 export async function fetchFamilyTreeFromServer(): Promise<ServerTreeResponse | null> {
   try {
@@ -54,15 +193,20 @@ export async function fetchFamilyTreeFromServer(): Promise<ServerTreeResponse | 
 
 /**
  * Saves the shared family tree and pinnedPersonId to the backend server (/api/tree).
+ * Includes the Admin Bearer token.
  */
 export async function saveFamilyTreeToServer(
   people: Person[],
   pinnedPersonId: string | null
 ): Promise<boolean> {
+  const token = getStoredAuthToken();
   try {
     const res = await fetch('/api/tree', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ people, pinnedPersonId })
     });
     return res.ok;

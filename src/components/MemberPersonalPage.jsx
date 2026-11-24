@@ -28,6 +28,7 @@ import './MemberPersonalPage.css';
 export default function MemberPersonalPage({
   person,
   people,
+  isAdmin = false,
   onSelectPerson,
   onEditMember,
   onEditPersonalPage,
@@ -178,7 +179,7 @@ export default function MemberPersonalPage({
           {/* Top Floating Actions Bar */}
           <div className="personal-top-bar">
             <div className="top-bar-left">
-              {onTogglePin && (
+              {isAdmin && onTogglePin ? (
                 <button
                   type="button"
                   className={`personal-pin-chip ${isPinned ? 'is-pinned' : ''}`}
@@ -192,46 +193,53 @@ export default function MemberPersonalPage({
                   <Pin size={13} />
                   <span>{isPinned ? 'Pinned Default' : 'Pin Default'}</span>
                 </button>
-              )}
+              ) : isPinned ? (
+                <span className="personal-pin-chip is-pinned">
+                  <Pin size={13} />
+                  <span>Pinned Default</span>
+                </span>
+              ) : null}
             </div>
 
-            <div className="top-bar-actions">
-              <button
-                type="button"
-                className="btn-hero-action primary-studio-btn"
-                onClick={() => onEditPersonalPage(person)}
-                title="Open Personal Page Editor (Biography, Chapters, Photos, Timeline)"
-              >
-                <FileEdit size={14} />
-                <span>Edit Personal Page</span>
-              </button>
-              <button
-                type="button"
-                className="btn-hero-action"
-                onClick={() => onAddRelative(person.id)}
-                title="Add Relative (Child, Spouse, Parent, Sibling)"
-              >
-                <UserPlus size={14} />
-                <span>Add Relative</span>
-              </button>
-              <button
-                type="button"
-                className="btn-hero-action"
-                onClick={() => onEditMember(person.id)}
-                title="Edit Vital Info & Family Links"
-              >
-                <Edit size={14} />
-                <span>Edit Info</span>
-              </button>
-              <button
-                type="button"
-                className="btn-hero-action danger"
-                onClick={() => onDelete(person.id)}
-                title="Delete Member"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
+            {isAdmin && (
+              <div className="top-bar-actions">
+                <button
+                  type="button"
+                  className="btn-hero-action primary-studio-btn"
+                  onClick={() => onEditPersonalPage(person)}
+                  title="Open Personal Page Editor (Biography, Chapters, Photos, Timeline)"
+                >
+                  <FileEdit size={14} />
+                  <span>Edit Personal Page</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-hero-action"
+                  onClick={() => onAddRelative(person.id)}
+                  title="Add Relative (Child, Spouse, Parent, Sibling)"
+                >
+                  <UserPlus size={14} />
+                  <span>Add Relative</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-hero-action"
+                  onClick={() => onEditMember(person.id)}
+                  title="Edit Vital Info & Family Links"
+                >
+                  <Edit size={14} />
+                  <span>Edit Info</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-hero-action danger"
+                  onClick={() => onDelete(person.id)}
+                  title="Delete Member"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -249,7 +257,7 @@ export default function MemberPersonalPage({
                 <GenderAvatar gender={person.gender} name={person.name} />
               )}
             </div>
-            {onCropPhoto && (
+            {isAdmin && onCropPhoto && (
               <button
                 type="button"
                 className="personal-avatar-crop-btn"
@@ -401,14 +409,16 @@ export default function MemberPersonalPage({
             <section className="story-card glass-panel">
               <div className="story-card-header">
                 <h3>Biography Overview</h3>
-                <button
-                  type="button"
-                  className="btn-inline-edit"
-                  onClick={() => onEditPersonalPage(person, 'story')}
-                >
-                  <FileEdit size={13} />
-                  <span>Edit Story</span>
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="btn-inline-edit"
+                    onClick={() => onEditPersonalPage(person, 'story')}
+                  >
+                    <FileEdit size={13} />
+                    <span>Edit Story</span>
+                  </button>
+                )}
               </div>
               {person.bio ? (
                 <p className="story-paragraph" dir="auto">
@@ -417,13 +427,15 @@ export default function MemberPersonalPage({
               ) : (
                 <div className="story-empty-prompt">
                   <p>No overview biography has been written for {person.name} yet.</p>
-                  <button
-                    type="button"
-                    className="btn-secondary-sm"
-                    onClick={() => onEditPersonalPage(person, 'story')}
-                  >
-                    <Plus size={13} style={{ marginRight: 4 }} /> Write Biography
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="btn-secondary-sm"
+                      onClick={() => onEditPersonalPage(person, 'story')}
+                    >
+                      <Plus size={13} style={{ marginRight: 4 }} /> Write Biography
+                    </button>
+                  )}
                 </div>
               )}
             </section>
@@ -444,7 +456,7 @@ export default function MemberPersonalPage({
                   </article>
                 ))}
               </div>
-            ) : (
+            ) : isAdmin ? (
               <div className="add-chapter-callout glass-panel">
                 <div className="callout-text">
                   <h4>Add Personal Story Chapters</h4>
@@ -461,7 +473,7 @@ export default function MemberPersonalPage({
                   Add Story Chapters
                 </button>
               </div>
-            )}
+            ) : null}
 
             {/* Custom Attributes / Quick Facts */}
             {person.customFields && person.customFields.length > 0 && (
@@ -524,14 +536,16 @@ export default function MemberPersonalPage({
                   Portraits, historical documents, and family memories of {person.name}
                 </p>
               </div>
-              <button
-                type="button"
-                className="btn-primary flex-center"
-                onClick={() => onEditPersonalPage(person, 'gallery')}
-              >
-                <Plus size={15} style={{ marginRight: 6 }} />
-                Add / Manage Photos
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="btn-primary flex-center"
+                  onClick={() => onEditPersonalPage(person, 'gallery')}
+                >
+                  <Plus size={15} style={{ marginRight: 6 }} />
+                  Add / Manage Photos
+                </button>
+              )}
             </div>
 
             {gallery.length === 0 ? (
@@ -539,16 +553,20 @@ export default function MemberPersonalPage({
                 <ImageIcon size={36} className="empty-box-icon" />
                 <h4>No Photos in {person.name}&apos;s Album Yet</h4>
                 <p>
-                  Upload historical portraits, family gatherings, or documents with captions, dates, and locations.
+                  {isAdmin
+                    ? 'Upload historical portraits, family gatherings, or documents with captions, dates, and locations.'
+                    : 'No photos have been added to this album yet.'}
                 </p>
-                <button
-                  type="button"
-                  className="btn-primary flex-center"
-                  onClick={() => onEditPersonalPage(person, 'gallery')}
-                >
-                  <Plus size={15} style={{ marginRight: 6 }} />
-                  Upload Photos to Page
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="btn-primary flex-center"
+                    onClick={() => onEditPersonalPage(person, 'gallery')}
+                  >
+                    <Plus size={15} style={{ marginRight: 6 }} />
+                    Upload Photos to Page
+                  </button>
+                )}
               </div>
             ) : (
               <div className="personal-gallery-grid">
@@ -603,14 +621,16 @@ export default function MemberPersonalPage({
                   Key milestones, family events, and historical moments
                 </p>
               </div>
-              <button
-                type="button"
-                className="btn-primary flex-center"
-                onClick={() => onEditPersonalPage(person, 'timeline')}
-              >
-                <Plus size={15} style={{ marginRight: 6 }} />
-                Add Milestone
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="btn-primary flex-center"
+                  onClick={() => onEditPersonalPage(person, 'timeline')}
+                >
+                  <Plus size={15} style={{ marginRight: 6 }} />
+                  Add Milestone
+                </button>
+              )}
             </div>
 
             {fullTimeline.length === 0 ? (
@@ -618,16 +638,20 @@ export default function MemberPersonalPage({
                 <Clock size={36} className="empty-box-icon" />
                 <h4>No Timeline Events Yet</h4>
                 <p>
-                  Add birth dates, education, marriage, travels, or career milestones to build a chronological story.
+                  {isAdmin
+                    ? 'Add birth dates, education, marriage, travels, or career milestones to build a chronological story.'
+                    : 'No timeline milestones have been recorded for this member yet.'}
                 </p>
-                <button
-                  type="button"
-                  className="btn-primary flex-center"
-                  onClick={() => onEditPersonalPage(person, 'timeline')}
-                >
-                  <Plus size={15} style={{ marginRight: 6 }} />
-                  Add First Milestone
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="btn-primary flex-center"
+                    onClick={() => onEditPersonalPage(person, 'timeline')}
+                  >
+                    <Plus size={15} style={{ marginRight: 6 }} />
+                    Add First Milestone
+                  </button>
+                )}
               </div>
             ) : (
               <div className="personal-timeline-list">
@@ -689,14 +713,16 @@ export default function MemberPersonalPage({
                   Click any relative to center them in the tree and open their personal page
                 </p>
               </div>
-              <button
-                type="button"
-                className="btn-primary flex-center"
-                onClick={() => onAddRelative(person.id)}
-              >
-                <UserPlus size={15} style={{ marginRight: 6 }} />
-                Add Relative
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className="btn-primary flex-center"
+                  onClick={() => onAddRelative(person.id)}
+                >
+                  <UserPlus size={15} style={{ marginRight: 6 }} />
+                  Add Relative
+                </button>
+              )}
             </div>
 
             <div className="family-groups-stack">
@@ -797,16 +823,20 @@ export default function MemberPersonalPage({
                     <Users size={36} className="empty-box-icon" />
                     <h4>No Direct Relatives Linked Yet</h4>
                     <p>
-                      Connect parents, a spouse, siblings, or children to build {person.name}&apos;s branch of the family tree.
+                      {isAdmin
+                        ? `Connect parents, a spouse, siblings, or children to build ${person.name}'s branch of the family tree.`
+                        : 'No immediate relatives have been linked to this member yet.'}
                     </p>
-                    <button
-                      type="button"
-                      className="btn-primary flex-center"
-                      onClick={() => onAddRelative(person.id)}
-                    >
-                      <UserPlus size={15} style={{ marginRight: 6 }} />
-                      Link a Relative
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        className="btn-primary flex-center"
+                        onClick={() => onAddRelative(person.id)}
+                      >
+                        <UserPlus size={15} style={{ marginRight: 6 }} />
+                        Link a Relative
+                      </button>
+                    )}
                   </div>
                 )}
             </div>

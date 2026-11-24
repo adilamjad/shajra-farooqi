@@ -10,12 +10,15 @@ import BulkImport from './components/BulkImport';
 import ExportModal from './components/ExportModal';
 import PhotoCropModal from './components/PhotoCropModal';
 import ThemeModal from './components/ThemeModal';
+import AuthModal from './components/AuthModal';
 import { initialPeople } from './utils/mockData';
 import {
   loadFamilyTreeFromDB,
   saveFamilyTreeToDB,
   fetchFamilyTreeFromServer,
-  saveFamilyTreeToServer
+  saveFamilyTreeToServer,
+  fetchCurrentUser,
+  setStoredAuthToken
 } from './utils/storageHelper';
 import {
   DEFAULT_CUSTOM_THEME,
@@ -156,9 +159,44 @@ export default function App() {
   const [showExport, setShowExport] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [formPerson, setFormPerson] = useState(null); // Person object if editing
   const [initialRelation, setInitialRelation] = useState(null); // { relationType, relativeId }
   const [cropModalPerson, setCropModalPerson] = useState(null); // Person object for photo crop/scale modal
+
+  // User Role State: defaults to Viewer mode on load
+  const [currentUser, setCurrentUser] = useState({
+    username: 'viewer',
+    role: 'viewer',
+    isDefaultViewer: true
+  });
+  const isAdmin = currentUser.role === 'admin';
+
+  useEffect(() => {
+    let mounted = true;
+    fetchCurrentUser().then((user) => {
+      if (mounted && user) {
+        setCurrentUser(user);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleLogoutToViewer = () => {
+    setStoredAuthToken(null);
+    setCurrentUser((prev) => ({
+      username: 'viewer',
+      role: 'viewer',
+      isDefaultViewer: true,
+      accountsInfo: prev.accountsInfo
+    }));
+    setIsEditingPersonalPage(false);
+    setShowForm(false);
+    setShowImport(false);
+    setCropModalPerson(null);
+  };
 
   // Theme State: 'dark' | 'light' | 'custom'
   const [themeMode, setThemeMode] = useState(() => {
@@ -311,8 +349,10 @@ export default function App() {
   useEffect(() => {
     if (!dbHydrated) return;
     saveFamilyTreeToDB(people);
-    saveFamilyTreeToServer(people, pinnedPersonId);
-  }, [people, pinnedPersonId, dbHydrated]);
+    if (isAdmin) {
+      saveFamilyTreeToServer(people, pinnedPersonId);
+    }
+  }, [people, pinnedPersonId, dbHydrated, isAdmin]);
 
   useEffect(() => {
     localStorage.setItem('shajra_active_view', activeView);
@@ -611,10 +651,14 @@ export default function App() {
         themeMode={themeMode}
         onThemeModeChange={(mode) => setThemeMode(mode)}
         onOpenThemeModal={() => setShowThemeModal(true)}
-        onImportClick={() => setShowImport(true)}
+        isAdmin={isAdmin}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setShowAuthModal(true)}
+        onImportClick={() => isAdmin && setShowImport(true)}
         onExportClick={() => setShowExport(true)}
-        onPurgeClick={handlePurgeTree}
+        onPurgeClick={() => isAdmin && handlePurgeTree()}
         onAddClick={() => {
+          if (!isAdmin) return;
           setFormPerson(null);
           setInitialRelation(null);
           setShowForm(true);
@@ -641,20 +685,22 @@ export default function App() {
               selectedPersonId={selectedPersonId}
               onSelectPerson={handleSelectPerson}
               viewMode={viewMode}
-              onCropPhoto={handleOpenCropModal}
-              onToggleFit={handleTogglePhotoFit}
+              onCropPhoto={isAdmin ? handleOpenCropModal : null}
+              onToggleFit={isAdmin ? handleTogglePhotoFit : null}
               pinnedPersonId={pinnedPersonId}
-              onTogglePin={handleTogglePinPerson}
+              onTogglePin={isAdmin ? handleTogglePinPerson : null}
             />
           ) : (
             <TableView
               people={people}
+              isAdmin={isAdmin}
               selectedPersonId={selectedPersonId}
               onSelectPerson={handleSelectPerson}
               onEditPerson={handleEditTrigger}
               onDeletePerson={handleDeletePerson}
               onAddRelative={handleAddRelativeTrigger}
               onAddPerson={() => {
+                if (!isAdmin) return;
                 setFormPerson(null);
                 setInitialRelation(null);
                 setShowForm(true);
@@ -744,7 +790,7 @@ export default function App() {
             style={{ width: `${100 - leftPanePercent}%` }}
             aria-label="Member Details and Personal Page Space"
           >
-            {isEditingPersonalPage && selectedPerson ? (
+            {isAdmin && isEditingPersonalPage && selectedPerson ? (
               <PersonalPageEditor
                 person={selectedPerson}
                 initialSection={editorInitialSection}
@@ -755,14 +801,15 @@ export default function App() {
               <MemberPersonalPage
                 person={selectedPerson}
                 people={people}
+                isAdmin={isAdmin}
                 onSelectPerson={handleSelectPerson}
                 onEditMember={handleEditTrigger}
                 onEditPersonalPage={handleOpenPersonalPageEditor}
                 onDelete={handleDeletePerson}
                 onAddRelative={handleAddRelativeTrigger}
-                onCropPhoto={handleOpenCropModal}
+                onCropPhoto={isAdmin ? handleOpenCropModal : null}
                 isPinned={selectedPerson?.id === pinnedPersonId}
-                onTogglePin={handleTogglePinPerson}
+                onTogglePin={isAdmin ? handleTogglePinPerson : null}
               />
             )}
           </section>
@@ -814,6 +861,15 @@ export default function App() {
           customTheme={customTheme}
           setCustomTheme={setCustomTheme}
           onClose={() => setShowThemeModal(false)}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          currentUser={currentUser}
+          onAuthChange={(updatedUser) => setCurrentUser(updatedUser)}
+          onLogout={handleLogoutToViewer}
+          onClose={() => setShowAuthModal(false)}
         />
       )}
     </div>

@@ -21,6 +21,7 @@ import './TableView.css';
 
 export default function TableView({
   people,
+  isAdmin = false,
   selectedPersonId,
   onSelectPerson,
   onEditPerson,
@@ -283,10 +284,12 @@ export default function TableView({
           )}
 
           {/* Add Member CTA */}
-          <button onClick={onAddPerson} className="btn-primary flex-center add-member-cta" id="btn-add-member-table">
-            <Plus size={16} style={{ marginRight: 6 }} />
-            Add Member
-          </button>
+          {isAdmin && (
+            <button onClick={onAddPerson} className="btn-primary flex-center add-member-cta" id="btn-add-member-table">
+              <Plus size={16} style={{ marginRight: 6 }} />
+              Add Member
+            </button>
+          )}
         </div>
       </div>
 
@@ -404,10 +407,12 @@ export default function TableView({
                             Clear Filters
                           </button>
                         )}
-                        <button onClick={onAddPerson} className="btn-primary flex-center">
-                          <Plus size={16} style={{ marginRight: 6 }} />
-                          {people.length === 0 ? 'Add First Member' : 'Add New Member'}
-                        </button>
+                        {isAdmin && (
+                          <button onClick={onAddPerson} className="btn-primary flex-center">
+                            <Plus size={16} style={{ marginRight: 6 }} />
+                            {people.length === 0 ? 'Add First Member' : 'Add New Member'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -426,8 +431,8 @@ export default function TableView({
                       key={person.id} 
                       className={`member-row ${isSelected ? 'row-selected' : ''}`}
                       onClick={() => onSelectPerson(person.id)}
-                      onDoubleClick={() => onEditPerson(person.id)}
-                      title="Click to view details in sidebar, double-click to edit"
+                      onDoubleClick={() => isAdmin && onEditPerson(person.id)}
+                      title={isAdmin ? "Click to view details, double-click to edit" : "Click to view personal page"}
                     >
                       {/* 1. Member Profile */}
                       <td className="col-member">
@@ -596,50 +601,54 @@ export default function TableView({
                               onSelectPerson(person.id);
                             }}
                             className="btn-action btn-action-view"
-                            title="View member details in sidebar"
+                            title="View member details & personal page"
                             aria-label={`View ${person.name}`}
                           >
                             <Eye size={15} />
                           </button>
 
-                          {/* Add Relative */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddRelative(person.id);
-                            }}
-                            className="btn-action btn-action-add"
-                            title="Add relative (child, spouse) to this member"
-                            aria-label={`Add relative to ${person.name}`}
-                          >
-                            <UserPlus size={15} />
-                          </button>
+                          {isAdmin && (
+                            <>
+                              {/* Add Relative */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onAddRelative(person.id);
+                                }}
+                                className="btn-action btn-action-add"
+                                title="Add relative (child, spouse, parent, sibling) to this member"
+                                aria-label={`Add relative to ${person.name}`}
+                              >
+                                <UserPlus size={15} />
+                              </button>
 
-                          {/* Edit Member */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditPerson(person.id);
-                            }}
-                            className="btn-action btn-action-edit"
-                            title="Modify / Edit this member"
-                            aria-label={`Edit ${person.name}`}
-                          >
-                            <Edit2 size={15} />
-                          </button>
+                              {/* Edit Member */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditPerson(person.id);
+                                }}
+                                className="btn-action btn-action-edit"
+                                title="Modify / Edit this member"
+                                aria-label={`Edit ${person.name}`}
+                              >
+                                <Edit2 size={15} />
+                              </button>
 
-                          {/* Delete Member */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeletePerson(person.id);
-                            }}
-                            className="btn-action btn-action-delete"
-                            title="Delete this member"
-                            aria-label={`Delete ${person.name}`}
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                              {/* Delete Member */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeletePerson(person.id);
+                                }}
+                                className="btn-action btn-action-delete"
+                                title="Delete this member"
+                                aria-label={`Delete ${person.name}`}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

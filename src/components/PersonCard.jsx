@@ -138,7 +138,7 @@ export default function PersonCard({
 
       {/* 3. Status Badges Corner */}
       <div className="card-indicators-corner">
-        {onTogglePin && (
+        {onTogglePin ? (
           <button
             type="button"
             className={`card-pin-indicator-btn ${isPinned ? 'is-pinned' : ''}`}
@@ -151,7 +151,14 @@ export default function PersonCard({
           >
             <Pin size={11} className={isPinned ? 'pin-icon-pinned' : 'pin-icon-unpinned'} />
           </button>
-        )}
+        ) : isPinned ? (
+          <span
+            className="card-pin-indicator-btn is-pinned"
+            title="Pinned default member"
+          >
+            <Pin size={11} className="pin-icon-pinned" />
+          </span>
+        ) : null}
         {person.spouseId && (
           <span className="indicator-badge spouse-indicator" title="Married / Spouse connected">
             <Heart size={10} />

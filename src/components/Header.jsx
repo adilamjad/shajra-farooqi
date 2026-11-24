@@ -15,7 +15,9 @@ import {
   X,
   Sun,
   Moon,
-  Palette
+  Palette,
+  Shield,
+  Eye
 } from 'lucide-react';
 import './Header.css';
 
@@ -32,6 +34,9 @@ export default function Header({
   themeMode = 'dark',
   onThemeModeChange,
   onOpenThemeModal,
+  isAdmin = false,
+  currentUser,
+  onOpenAuthModal,
   onImportClick,
   onExportClick,
   onAddClick,
@@ -206,16 +211,43 @@ export default function Header({
           </button>
         </div>
 
-        {/* Data Tools */}
+        {/* Data Tools & Account Role Button */}
         <div className="btn-group">
           <button
-            onClick={onImportClick}
-            className="btn-secondary flex-center"
-            title="Import CSV or JSON"
+            type="button"
+            onClick={onOpenAuthModal}
+            className={`btn-role-badge flex-center ${
+              isAdmin ? 'role-admin' : 'role-viewer'
+            }`}
+            title={
+              isAdmin
+                ? `Logged in as Admin (${currentUser?.username}). Click to manage accounts or switch to Viewer.`
+                : 'Browsing in Viewer (Read-Only) mode. Click to sign in as Admin.'
+            }
           >
-            <Upload size={16} style={{ marginRight: '6px' }} />
-            Import
+            {isAdmin ? (
+              <>
+                <Shield size={15} style={{ marginRight: 6 }} />
+                <span>Admin</span>
+              </>
+            ) : (
+              <>
+                <Eye size={15} style={{ marginRight: 6 }} />
+                <span>Viewer • Login</span>
+              </>
+            )}
           </button>
+
+          {isAdmin && (
+            <button
+              onClick={onImportClick}
+              className="btn-secondary flex-center"
+              title="Import CSV or JSON"
+            >
+              <Upload size={16} style={{ marginRight: '6px' }} />
+              Import
+            </button>
+          )}
           <button
             onClick={onExportClick}
             className="btn-secondary flex-center"
@@ -224,18 +256,22 @@ export default function Header({
             <Download size={16} style={{ marginRight: '6px' }} />
             Export
           </button>
-          <button
-            onClick={onPurgeClick}
-            className="btn-danger flex-center"
-            title="Purge Entire Tree"
-          >
-            <Trash2 size={16} style={{ marginRight: '6px' }} />
-            Purge
-          </button>
-          <button onClick={onAddClick} className="btn-primary flex-center">
-            <Plus size={16} style={{ marginRight: '6px' }} />
-            Add Member
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={onPurgeClick}
+                className="btn-danger flex-center"
+                title="Purge Entire Tree"
+              >
+                <Trash2 size={16} style={{ marginRight: '6px' }} />
+                Purge
+              </button>
+              <button onClick={onAddClick} className="btn-primary flex-center">
+                <Plus size={16} style={{ marginRight: '6px' }} />
+                Add Member
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>
