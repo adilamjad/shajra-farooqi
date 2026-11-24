@@ -71,7 +71,7 @@
 .view-mode-tabs {
   display: flex;
   align-items: center;
-  background: rgba(15, 17, 28, 0.7);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 3px;
@@ -95,14 +95,14 @@
 
 .view-tab-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-hover);
 }
 
 .view-tab-btn.active {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(124, 58, 237, 0.25));
-  color: #ffffff;
-  border: 1px solid rgba(139, 92, 246, 0.4);
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.25);
+  background: var(--color-accent-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-active);
+  box-shadow: var(--glow-shadow);
   font-weight: 600;
 }
 
@@ -142,10 +142,10 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  background: rgba(15, 17, 28, 0.88);
+  background: var(--bg-elevated);
   padding: 2px 4px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
 }
 
 .search-match-badge {
@@ -194,6 +194,46 @@
   border: none;
   padding-left: 4px;
   box-shadow: none !important;
+}
+
+/* Theme Switcher Pill (Light / Dark / Custom) */
+.theme-switcher-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.theme-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.theme-pill-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.theme-pill-btn.active {
+  background: var(--color-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 1380px) {
+  .theme-pill-label {
+    display: none;
+  }
 }
 
 .btn-group {

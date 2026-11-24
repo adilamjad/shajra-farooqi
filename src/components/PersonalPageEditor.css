@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(16, 18, 32, 0.96) 0%, rgba(10, 11, 18, 0.99) 100%);
+  background: var(--bg-primary);
   overflow: hidden;
   container-type: inline-size;
 }
@@ -14,7 +14,7 @@
   justify-content: space-between;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(14, 16, 28, 0.9);
+  background: var(--bg-secondary);
   gap: 12px;
   flex-wrap: wrap;
   flex-shrink: 0;
@@ -61,7 +61,7 @@
   gap: 6px;
   padding: 10px 24px;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(10, 12, 20, 0.75);
+  background: var(--bg-secondary);
   overflow-x: auto;
   flex-shrink: 0;
 }
@@ -179,8 +179,8 @@
 .editor-chapter-item {
   padding: 16px;
   border-radius: 12px;
-  background: rgba(12, 14, 24, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -277,8 +277,8 @@
   gap: 16px;
   padding: 14px;
   border-radius: 12px;
-  background: rgba(12, 14, 24, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 }
 
 @container (max-width: 520px) {

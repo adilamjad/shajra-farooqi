@@ -33,22 +33,22 @@
 }
 
 .split-pane-left {
-  background: radial-gradient(circle at center, rgba(18, 20, 32, 0.4) 0%, rgba(10, 11, 16, 0.95) 100%);
+  background: var(--bg-canvas-gradient);
 }
 
 .split-pane-right {
   border-left: 1px solid var(--border-color);
-  background: rgba(12, 14, 24, 0.95);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45);
+  background: var(--bg-secondary);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
 }
 
 /* Movable Split Divider */
 .split-resizer-bar {
   width: 12px;
   height: 100%;
-  background: rgba(16, 18, 30, 0.95);
-  border-left: 1px solid rgba(255, 255, 255, 0.07);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   cursor: col-resize;
   display: flex;
   flex-direction: column;
@@ -63,8 +63,8 @@
 .split-resizer-bar:hover,
 .split-resizer-bar.resizer-active,
 .split-resizer-bar:focus-visible {
-  background: rgba(139, 92, 246, 0.22);
-  border-color: rgba(139, 92, 246, 0.55);
+  background: var(--color-accent-bg);
+  border-color: var(--color-accent);
   outline: none;
 }
 
@@ -72,13 +72,13 @@
   width: 18px;
   height: 44px;
   border-radius: 999px;
-  background: rgba(24, 27, 44, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--card-shadow);
   pointer-events: none;
 }
 
@@ -101,13 +101,13 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: rgba(24, 27, 44, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--card-shadow);
 }
 
 .resizer-mini-btn:hover {

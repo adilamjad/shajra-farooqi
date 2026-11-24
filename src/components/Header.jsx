@@ -12,7 +12,10 @@ import {
   Pin,
   ChevronUp,
   ChevronDown,
-  X
+  X,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 import './Header.css';
 
@@ -26,6 +29,9 @@ export default function Header({
   setViewMode,
   activeView,
   setActiveView,
+  themeMode = 'dark',
+  onThemeModeChange,
+  onOpenThemeModal,
   onImportClick,
   onExportClick,
   onAddClick,
@@ -157,6 +163,47 @@ export default function Header({
             <option value="female-only">Female Only</option>
             <option value="couples-only">Couples Only</option>
           </select>
+        </div>
+
+        {/* Theme Switcher Pill (Light / Dark / Custom) */}
+        <div
+          className="theme-switcher-pill"
+          role="group"
+          aria-label="Theme Switcher"
+        >
+          <button
+            type="button"
+            className={`theme-pill-btn ${
+              themeMode === 'light' ? 'active' : ''
+            }`}
+            onClick={() => onThemeModeChange?.('light')}
+            title="Switch to Light Theme"
+          >
+            <Sun size={14} />
+            <span className="theme-pill-label">Light</span>
+          </button>
+          <button
+            type="button"
+            className={`theme-pill-btn ${
+              themeMode === 'dark' ? 'active' : ''
+            }`}
+            onClick={() => onThemeModeChange?.('dark')}
+            title="Switch to Dark Theme"
+          >
+            <Moon size={14} />
+            <span className="theme-pill-label">Dark</span>
+          </button>
+          <button
+            type="button"
+            className={`theme-pill-btn ${
+              themeMode === 'custom' ? 'active' : ''
+            }`}
+            onClick={() => onOpenThemeModal?.()}
+            title="Customize Theme Palette (Light, Dark & Custom)"
+          >
+            <Palette size={14} />
+            <span className="theme-pill-label">Custom</span>
+          </button>
         </div>
 
         {/* Data Tools */}

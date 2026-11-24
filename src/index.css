@@ -1,43 +1,98 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
+  color-scheme: light dark;
   --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
-  
-  /* Color Palette - Premium Dark Theme */
+
+  /* Default Dark Theme Tokens */
   --bg-primary: #0a0b10;
-  --bg-secondary: rgba(18, 20, 32, 0.7);
-  --bg-card: rgba(30, 32, 50, 0.55);
-  --bg-input: rgba(15, 17, 28, 0.6);
-  
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(124, 58, 237, 0.4);
-  
+  --bg-secondary: rgba(18, 20, 32, 0.78);
+  --bg-card: rgba(25, 29, 46, 0.9);
+  --bg-elevated: #121524;
+  --bg-input: rgba(15, 17, 28, 0.72);
+  --bg-canvas-gradient: radial-gradient(circle at center, rgba(18, 20, 32, 0.4) 0%, rgba(10, 11, 16, 0.95) 100%);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-active: rgba(124, 58, 237, 0.45);
+
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
-  
+
   /* Gender Colors */
   --color-male: #3b82f6;
   --color-male-bg: rgba(59, 130, 246, 0.15);
   --color-male-border: rgba(59, 130, 246, 0.4);
-  
+
   --color-female: #ec4899;
   --color-female-bg: rgba(236, 72, 153, 0.15);
   --color-female-border: rgba(236, 72, 153, 0.4);
-  
+
   --color-other: #10b981;
   --color-other-bg: rgba(16, 185, 129, 0.15);
   --color-other-border: rgba(16, 185, 129, 0.4);
-  
+
   /* Brand/Accent Colors */
   --color-accent: #8b5cf6;
   --color-accent-hover: #a78bfa;
   --color-accent-bg: rgba(139, 92, 246, 0.15);
-  
+
+  /* Tree Lines */
+  --spouse-line-color: rgba(255, 255, 255, 0.2);
+  --child-line-color: rgba(139, 92, 246, 0.4);
+
   /* Glassmorphism details */
   --backdrop-blur: blur(12px);
   --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glow-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  --glow-shadow: 0 0 20px rgba(139, 92, 246, 0.22);
+
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+}
+
+/* Light Theme Override */
+:root[data-theme="light"] {
+  --bg-primary: #f3f5f9;
+  --bg-secondary: rgba(255, 255, 255, 0.88);
+  --bg-card: rgba(255, 255, 255, 0.96);
+  --bg-elevated: #ffffff;
+  --bg-input: #ffffff;
+  --bg-canvas-gradient: radial-gradient(circle at center, #ffffff 0%, #eef2f8 100%);
+  --surface-hover: rgba(15, 23, 42, 0.05);
+
+  --border-color: rgba(15, 23, 42, 0.11);
+  --border-active: rgba(124, 58, 237, 0.45);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --color-male: #2563eb;
+  --color-male-bg: rgba(37, 99, 235, 0.12);
+  --color-male-border: rgba(37, 99, 235, 0.35);
+
+  --color-female: #db2777;
+  --color-female-bg: rgba(219, 39, 119, 0.12);
+  --color-female-border: rgba(219, 39, 119, 0.35);
+
+  --color-other: #059669;
+  --color-other-bg: rgba(5, 150, 105, 0.12);
+  --color-other-border: rgba(5, 150, 105, 0.35);
+
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-accent-bg: rgba(124, 58, 237, 0.12);
+
+  --spouse-line-color: rgba(15, 23, 42, 0.28);
+  --child-line-color: rgba(124, 58, 237, 0.45);
+
+  --card-shadow: 0 8px 28px 0 rgba(15, 23, 42, 0.08);
+  --glow-shadow: 0 0 18px rgba(124, 58, 237, 0.18);
 }
 
 * {
@@ -50,14 +105,15 @@
 body {
   background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, var(--color-accent-bg) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, var(--color-female-bg) 0px, transparent 50%);
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
   width: 100vw;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Scrollbar styling */
@@ -67,16 +123,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.4);
+  background: var(--color-accent);
 }
 
 /* Glassmorphism panels */
@@ -99,20 +155,21 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-accent), #6d28d9);
-  color: white;
+  background: var(--color-accent);
+  color: #ffffff;
   padding: 10px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  box-shadow: var(--glow-shadow);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4), var(--glow-shadow);
+  filter: brightness(1.08);
+  box-shadow: var(--glow-shadow);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-hover);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   padding: 10px 20px;
@@ -120,12 +177,12 @@ button {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-accent-bg);
+  border-color: var(--border-active);
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.14);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.3);
   padding: 10px 20px;
@@ -135,11 +192,11 @@ button {
 .btn-danger:hover {
   background: #ef4444;
   color: white;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 .btn-icon {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-hover);
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   width: 40px;
@@ -151,8 +208,8 @@ button {
 }
 
 .btn-icon:hover {
-  background: rgba(139, 92, 246, 0.15);
-  color: var(--color-accent-hover);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
   border-color: var(--border-active);
 }
 
@@ -170,7 +227,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 2px var(--color-accent-bg);
 }
 
 label {

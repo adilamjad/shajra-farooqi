@@ -6,7 +6,7 @@
   width: 100%;
   cursor: grab;
   user-select: none;
-  background: radial-gradient(circle at center, rgba(18, 20, 32, 0.4) 0%, rgba(10, 11, 16, 0.95) 100%);
+  background: var(--bg-canvas-gradient);
 }
 
 .tree-container.grabbing {
@@ -143,14 +143,14 @@
 }
 
 .spouse-line {
-  stroke: rgba(255, 255, 255, 0.18);
+  stroke: var(--spouse-line-color);
   stroke-width: 2;
   stroke-dasharray: 5, 5;
 }
 
 .child-line {
   fill: none;
-  stroke: rgba(139, 92, 246, 0.38);
+  stroke: var(--child-line-color);
   stroke-width: 2;
   transition: stroke 0.2s ease;
 }

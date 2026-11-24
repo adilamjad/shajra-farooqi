@@ -2,6 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      try {
+        var mode = localStorage.getItem('shajra_theme_mode') || 'dark';
+        document.documentElement.dataset.theme = mode;
+        var meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) {
+          meta.content = mode === 'light' ? 'light' : mode === 'dark' ? 'dark' : 'light dark';
+        }
+      } catch (e) {}
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shajra - Interactive Family Tree</title>

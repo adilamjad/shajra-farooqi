@@ -9,8 +9,13 @@ import MemberForm from './components/MemberForm';
 import BulkImport from './components/BulkImport';
 import ExportModal from './components/ExportModal';
 import PhotoCropModal from './components/PhotoCropModal';
+import ThemeModal from './components/ThemeModal';
 import { initialPeople } from './utils/mockData';
 import { loadFamilyTreeFromDB, saveFamilyTreeToDB } from './utils/storageHelper';
+import {
+  DEFAULT_CUSTOM_THEME,
+  applyThemeToDocument
+} from './utils/themeHelper';
 import './App.css';
 
 export default function App() {
@@ -112,9 +117,45 @@ export default function App() {
   const [showImport, setShowImport] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [formPerson, setFormPerson] = useState(null); // Person object if editing
   const [initialRelation, setInitialRelation] = useState(null); // { relationType, relativeId }
   const [cropModalPerson, setCropModalPerson] = useState(null); // Person object for photo crop/scale modal
+
+  // Theme State: 'dark' | 'light' | 'custom'
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('shajra_theme_mode');
+      if (saved === 'light' || saved === 'dark' || saved === 'custom') {
+        return saved;
+      }
+      return 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  const [customTheme, setCustomTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('shajra_custom_theme');
+      return saved
+        ? { ...DEFAULT_CUSTOM_THEME, ...JSON.parse(saved) }
+        : DEFAULT_CUSTOM_THEME;
+    } catch {
+      return DEFAULT_CUSTOM_THEME;
+    }
+  });
+
+  // Apply and persist theme whenever themeMode or customTheme changes
+  useEffect(() => {
+    applyThemeToDocument(themeMode, customTheme);
+    try {
+      localStorage.setItem('shajra_theme_mode', themeMode);
+      localStorage.setItem('shajra_custom_theme', JSON.stringify(customTheme));
+    } catch {
+      // ignore storage errors
+    }
+  }, [themeMode, customTheme]);
 
   // Handle movable split-pane drag
   const handleDividerPointerDown = (e) => {
@@ -530,6 +571,9 @@ export default function App() {
         setViewMode={setViewMode}
         activeView={activeView}
         setActiveView={handleViewChange}
+        themeMode={themeMode}
+        onThemeModeChange={(mode) => setThemeMode(mode)}
+        onOpenThemeModal={() => setShowThemeModal(true)}
         onImportClick={() => setShowImport(true)}
         onExportClick={() => setShowExport(true)}
         onPurgeClick={handlePurgeTree}
@@ -723,6 +767,16 @@ export default function App() {
           person={cropModalPerson}
           onSave={handleSaveCroppedPhoto}
           onClose={() => setCropModalPerson(null)}
+        />
+      )}
+
+      {showThemeModal && (
+        <ThemeModal
+          themeMode={themeMode}
+          setThemeMode={setThemeMode}
+          customTheme={customTheme}
+          setCustomTheme={setCustomTheme}
+          onClose={() => setShowThemeModal(false)}
         />
       )}
     </div>
