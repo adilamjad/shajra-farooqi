@@ -5,6 +5,13 @@ const DB_VERSION = 1;
 const STORE_NAME = 'app_state';
 const TREE_KEY = 'shajra_family_tree';
 
+export interface ServerTreeResponse {
+  initialized: boolean;
+  people: Person[] | null;
+  pinnedPersonId: string | null;
+  updatedAt?: string;
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
@@ -24,7 +31,48 @@ function openDB(): Promise<IDBDatabase> {
 }
 
 /**
- * Loads family tree from IndexedDB, falling back to localStorage or initialPeople
+ * Fetches the shared family tree from the backend server (/api/tree).
+ * Returns null if the server API is unreachable (e.g. offline static mode).
+ */
+export async function fetchFamilyTreeFromServer(): Promise<ServerTreeResponse | null> {
+  try {
+    const res = await fetch('/api/tree', {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && typeof data === 'object' && 'initialized' in data) {
+      return data as ServerTreeResponse;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Saves the shared family tree and pinnedPersonId to the backend server (/api/tree).
+ */
+export async function saveFamilyTreeToServer(
+  people: Person[],
+  pinnedPersonId: string | null
+): Promise<boolean> {
+  try {
+    const res = await fetch('/api/tree', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ people, pinnedPersonId })
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Loads family tree from local IndexedDB cache
  */
 export async function loadFamilyTreeFromDB(): Promise<Person[] | null> {
   try {
@@ -42,7 +90,7 @@ export async function loadFamilyTreeFromDB(): Promise<Person[] | null> {
 }
 
 /**
- * Saves family tree to IndexedDB (unlimited photo storage) and mirrors a safe copy to localStorage when within quota
+ * Saves family tree to local IndexedDB and localStorage cache
  */
 export async function saveFamilyTreeToDB(people: Person[]): Promise<void> {
   try {
@@ -61,8 +109,7 @@ export async function saveFamilyTreeToDB(people: Person[]): Promise<void> {
   try {
     localStorage.setItem(TREE_KEY, JSON.stringify(people));
   } catch {
-    // If localStorage 5MB quota is exceeded due to large photo galleries,
-    // IndexedDB still holds the complete dataset.
+    // Ignore localStorage quota exceeded
   }
 }
 

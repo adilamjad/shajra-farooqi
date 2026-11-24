@@ -11,7 +11,12 @@ import ExportModal from './components/ExportModal';
 import PhotoCropModal from './components/PhotoCropModal';
 import ThemeModal from './components/ThemeModal';
 import { initialPeople } from './utils/mockData';
-import { loadFamilyTreeFromDB, saveFamilyTreeToDB } from './utils/storageHelper';
+import {
+  loadFamilyTreeFromDB,
+  saveFamilyTreeToDB,
+  fetchFamilyTreeFromServer,
+  saveFamilyTreeToServer
+} from './utils/storageHelper';
 import {
   DEFAULT_CUSTOM_THEME,
   applyThemeToDocument
@@ -31,15 +36,48 @@ export default function App() {
 
   const [dbHydrated, setDbHydrated] = useState(false);
 
+  // Hydrate from shared server API first (/api/tree), falling back to local IndexedDB
   useEffect(() => {
     let mounted = true;
-    loadFamilyTreeFromDB().then((dbPeople) => {
+
+    async function hydrateTreeData() {
+      const [serverData, localDbPeople] = await Promise.all([
+        fetchFamilyTreeFromServer(),
+        loadFamilyTreeFromDB()
+      ]);
+
       if (!mounted) return;
-      if (Array.isArray(dbPeople) && dbPeople.length > 0) {
-        setPeople(dbPeople);
+
+      if (serverData && serverData.initialized && Array.isArray(serverData.people)) {
+        // 1. Server has the shared family tree -> use it everywhere (Incognito, other devices, etc.)
+        setPeople(serverData.people);
+        if (serverData.pinnedPersonId) {
+          setPinnedPersonId(serverData.pinnedPersonId);
+          localStorage.setItem('shajra_pinned_person_id', serverData.pinnedPersonId);
+          setSelectedPersonId(serverData.pinnedPersonId);
+        } else if (serverData.people.length > 0) {
+          const root =
+            serverData.people.find((p) => !p.fatherId && !p.motherId) ||
+            serverData.people[0];
+          setSelectedPersonId(root.id);
+        }
+      } else if (Array.isArray(localDbPeople) && localDbPeople.length > 0) {
+        // 2. Server is fresh/uninitialized, but this browser already has a tree in IndexedDB -> migrate it to the server!
+        setPeople(localDbPeople);
+        const currentPin = localStorage.getItem('shajra_pinned_person_id') || null;
+        if (serverData && !serverData.initialized) {
+          saveFamilyTreeToServer(localDbPeople, currentPin);
+        }
+      } else if (serverData && !serverData.initialized) {
+        // 3. Both server and browser are brand new -> seed server with initialPeople
+        const currentPin = localStorage.getItem('shajra_pinned_person_id') || null;
+        saveFamilyTreeToServer(initialPeople, currentPin);
       }
+
       setDbHydrated(true);
-    });
+    }
+
+    hydrateTreeData();
     return () => {
       mounted = false;
     };
@@ -269,13 +307,12 @@ export default function App() {
     }
   };
 
-  // Sync to IndexedDB & localStorage
+  // Sync to Server API, IndexedDB & localStorage once initial hydration completes
   useEffect(() => {
-    if (!dbHydrated && people === initialPeople) {
-      // Wait for initial check before overwriting DB with mock data
-    }
+    if (!dbHydrated) return;
     saveFamilyTreeToDB(people);
-  }, [people, dbHydrated]);
+    saveFamilyTreeToServer(people, pinnedPersonId);
+  }, [people, pinnedPersonId, dbHydrated]);
 
   useEffect(() => {
     localStorage.setItem('shajra_active_view', activeView);
