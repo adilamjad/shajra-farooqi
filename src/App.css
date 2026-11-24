@@ -1,0 +1,140 @@
+/* App-wide layout styles */
+.app-container {
+  display: grid;
+  grid-template-rows: 72px 1fr;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-container.is-resizing-split {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.main-content.split-workspace {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.split-pane {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+}
+
+.split-pane-left {
+  background: radial-gradient(circle at center, rgba(18, 20, 32, 0.4) 0%, rgba(10, 11, 16, 0.95) 100%);
+}
+
+.split-pane-right {
+  border-left: 1px solid var(--border-color);
+  background: rgba(12, 14, 24, 0.95);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45);
+}
+
+/* Movable Split Divider */
+.split-resizer-bar {
+  width: 12px;
+  height: 100%;
+  background: rgba(16, 18, 30, 0.95);
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: col-resize;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 25;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.split-resizer-bar:hover,
+.split-resizer-bar.resizer-active,
+.split-resizer-bar:focus-visible {
+  background: rgba(139, 92, 246, 0.22);
+  border-color: rgba(139, 92, 246, 0.55);
+  outline: none;
+}
+
+.resizer-grip-pill {
+  width: 18px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(24, 27, 44, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.split-resizer-bar:hover .resizer-grip-pill,
+.split-resizer-bar.resizer-active .resizer-grip-pill {
+  color: #fff;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.resizer-quick-controls {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resizer-mini-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(24, 27, 44, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.resizer-mini-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent-hover);
+}
+
+/* Reopen button when right pane is collapsed */
+.btn-reopen-right-pane {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border: 1px solid rgba(139, 92, 246, 0.45);
+  background: rgba(18, 20, 34, 0.9);
+}
+
+.btn-reopen-right-pane:hover {
+  background: var(--color-accent);
+  color: #fff;
+}

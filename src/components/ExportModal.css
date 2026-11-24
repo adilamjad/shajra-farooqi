@@ -1,0 +1,100 @@
+.export-modal {
+  width: 600px;
+}
+
+.export-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.export-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.export-pinned-info {
+  display: flex;
+  align-items: center;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #fbbf24;
+}
+
+.export-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.export-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  justify-content: space-between;
+  height: 260px;
+}
+
+.export-option-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-active);
+  box-shadow: var(--glow-shadow);
+}
+
+.export-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.export-card-icon.json {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--color-accent);
+}
+
+.export-card-icon.csv {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-male);
+}
+
+.export-card-details h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.export-card-details p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.btn-export-action {
+  font-size: 12px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .export-options-grid {
+    grid-template-columns: 1fr;
+  }
+  .export-option-card {
+    height: auto;
+  }
+}
