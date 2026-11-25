@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Upload, Crop } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { X, Plus, Trash2, Upload, Crop, Search, ChevronDown, Check } from 'lucide-react';
 import GenderAvatar from './GenderAvatar';
 import PhotoCropModal from './PhotoCropModal';
 import './MemberForm.css';
@@ -426,53 +426,33 @@ export default function MemberForm({
             <div className="form-section flex-1 border-left-dev">
               <h3>Family Ties &amp; Attributes</h3>
 
-              <div className="form-group">
-                <label htmlFor="member-father">Father</label>
-                <select
-                  id="member-father"
-                  value={fatherId}
-                  onChange={(e) => setFatherId(e.target.value)}
-                >
-                  <option value="">-- Select Father --</option>
-                  {fathers.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchablePersonSelect
+                id="member-father"
+                label="Father"
+                placeholder="-- Select Father --"
+                value={fatherId}
+                options={fathers}
+                onChange={setFatherId}
+              />
 
-              <div className="form-group">
-                <label htmlFor="member-mother">Mother</label>
-                <select
-                  id="member-mother"
-                  value={motherId}
-                  onChange={(e) => setMotherId(e.target.value)}
-                >
-                  <option value="">-- Select Mother --</option>
-                  {mothers.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchablePersonSelect
+                id="member-mother"
+                label="Mother"
+                placeholder="-- Select Mother --"
+                value={motherId}
+                options={mothers}
+                onChange={setMotherId}
+              />
 
-              <div className="form-group">
-                <label htmlFor="member-spouse">Spouse</label>
-                <select
-                  id="member-spouse"
-                  value={spouseId}
-                  onChange={(e) => setSpouseId(e.target.value)}
-                >
-                  <option value="">-- Select Spouse --</option>
-                  {spouses.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.gender})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchablePersonSelect
+                id="member-spouse"
+                label="Spouse"
+                placeholder="-- Select Spouse --"
+                value={spouseId}
+                options={spouses}
+                showGender
+                onChange={setSpouseId}
+              />
 
               {/* Custom fields section */}
               <div className="custom-fields-section">
@@ -556,6 +536,242 @@ export default function MemberForm({
           onClose={() => setShowCropModal(false)}
         />
       )}
+    </div>
+  );
+}
+
+function SearchablePersonSelect({
+  id,
+  label,
+  placeholder,
+  value,
+  options,
+  showGender = false,
+  onChange
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const wrapperRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const selectedPerson = useMemo(
+    () => options.find((p) => p.id === value) || null,
+    [options, value]
+  );
+
+  const filteredOptions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter((p) => {
+      const matchName = p.name?.toLowerCase().includes(q);
+      const matchArabic = p.arabicName?.toLowerCase().includes(q);
+      const matchMaiden = p.maidenName?.toLowerCase().includes(q);
+      const matchBirth = p.birthDate?.toLowerCase().includes(q);
+      const matchPlace = p.birthPlace?.toLowerCase().includes(q);
+      return (
+        matchName || matchArabic || matchMaiden || matchBirth || matchPlace
+      );
+    });
+  }, [options, query]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Auto-focus search input on open
+  useEffect(() => {
+    if (isOpen) {
+      setQuery('');
+      setTimeout(() => searchInputRef.current?.focus(), 10);
+    }
+  }, [isOpen]);
+
+  const handleSelect = (newId) => {
+    onChange(newId);
+    setIsOpen(false);
+    setQuery('');
+  };
+
+  return (
+    <div className="form-group searchable-select-group" ref={wrapperRef}>
+      <label htmlFor={id}>{label}</label>
+      <div className="searchable-select-container">
+        <button
+          id={id}
+          type="button"
+          className={`searchable-select-trigger ${isOpen ? 'is-open' : ''} ${
+            selectedPerson ? 'has-value' : ''
+          }`}
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+        >
+          <span className="searchable-trigger-text">
+            {selectedPerson ? (
+              <>
+                <span className="selected-person-name">
+                  {selectedPerson.name}
+                </span>
+                {selectedPerson.arabicName && (
+                  <span className="selected-person-arabic" dir="rtl">
+                    {selectedPerson.arabicName}
+                  </span>
+                )}
+                {showGender && (
+                  <span className="selected-person-meta">
+                    ({selectedPerson.gender})
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="searchable-placeholder">{placeholder}</span>
+            )}
+          </span>
+
+          <span className="searchable-trigger-icons">
+            {selectedPerson && (
+              <span
+                role="button"
+                tabIndex={0}
+                className="searchable-clear-btn"
+                title="Clear selection"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelect('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    handleSelect('');
+                  }
+                }}
+              >
+                <X size={13} />
+              </span>
+            )}
+            <ChevronDown
+              size={15}
+              className={`searchable-chevron ${isOpen ? 'rotated' : ''}`}
+            />
+          </span>
+        </button>
+
+        {isOpen && (
+          <div className="searchable-dropdown-popover glass-panel">
+            <div className="searchable-input-wrap">
+              <Search size={14} className="searchable-input-icon" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    setIsOpen(false);
+                  } else if (
+                    e.key === 'Enter' &&
+                    filteredOptions.length > 0
+                  ) {
+                    e.preventDefault();
+                    handleSelect(filteredOptions[0].id);
+                  }
+                }}
+                placeholder={`Search ${label.toLowerCase()} by name, Arabic name, year...`}
+                className="searchable-filter-input"
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="searchable-query-clear"
+                  onClick={() => setQuery('')}
+                  title="Clear search"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            <div className="searchable-options-list" role="listbox">
+              <button
+                type="button"
+                role="option"
+                aria-selected={!value}
+                className={`searchable-option-item none-option ${
+                  !value ? 'is-selected' : ''
+                }`}
+                onClick={() => handleSelect('')}
+              >
+                <span>{placeholder} (None)</span>
+                {!value && <Check size={14} className="option-check-icon" />}
+              </button>
+
+              {filteredOptions.length === 0 ? (
+                <div className="searchable-no-results">
+                  No matching family members found
+                </div>
+              ) : (
+                filteredOptions.map((item) => {
+                  const isSelected = item.id === value;
+                  const birthYear = item.birthDate
+                    ? item.birthDate.substring(0, 4)
+                    : null;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`searchable-option-item ${
+                        isSelected ? 'is-selected' : ''
+                      }`}
+                      onClick={() => handleSelect(item.id)}
+                    >
+                      <div className="searchable-option-main">
+                        <div className="searchable-option-title">
+                          <span className="opt-name">{item.name}</span>
+                          {item.arabicName && (
+                            <span className="opt-arabic" dir="rtl">
+                              {item.arabicName}
+                            </span>
+                          )}
+                          {item.maidenName && (
+                            <span className="opt-maiden">
+                              ({item.maidenName})
+                            </span>
+                          )}
+                        </div>
+                        <div className="searchable-option-sub">
+                          {showGender && (
+                            <span className={`opt-gender gender-${item.gender}`}>
+                              {item.gender}
+                            </span>
+                          )}
+                          {birthYear && <span>b. {birthYear}</span>}
+                          {item.birthPlace && <span>• {item.birthPlace}</span>}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <Check size={14} className="option-check-icon" />
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
